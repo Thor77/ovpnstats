@@ -1,4 +1,4 @@
-ovpnstats
+ovpnstats [![GoDoc](https://godoc.org/github.com/Thor77/ovpnstats?status.svg)](https://godoc.org/github.com/Thor77/ovpnstats)
 =========
 Parse OpenVPNs `openvpn-status.log`.
 
@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-        clients, routes, _ := ovpnstats.ParseStatusFile("openvpn-status.log")
+        clients, routes, _g := ovpnstats.ParseStatusFile("openvpn-status.log")
         // TODO: check error
         fmt.Printf("%#v\n", clients)
         /*
