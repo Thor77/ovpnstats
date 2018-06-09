@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const splitCharacter = ","
+
 // ClientInfo represents a CLIENT_LIST entry
 // HEADER,CLIENT_LIST,Common Name,Real Address,Virtual Address,Virtual IPv6 Address,Bytes Received,Bytes Sent,Connected Since,Connected Since (time_t),Username,Client ID,Peer ID
 type ClientInfo struct {
@@ -34,7 +36,7 @@ type RoutingInfo struct {
 }
 
 func parseClientListEntry(line string) (ClientInfo, error) {
-	parts := strings.Split(line, ",")
+	parts := strings.Split(line, splitCharacter)
 	bytesReceived, err := strconv.Atoi(parts[5])
 	if err != nil {
 		return ClientInfo{}, err
@@ -71,7 +73,7 @@ func parseClientListEntry(line string) (ClientInfo, error) {
 }
 
 func parseRoutingTableEntry(line string) (RoutingInfo, error) {
-	parts := strings.Split(line, ",")
+	parts := strings.Split(line, splitCharacter)
 	lastRefUnix, err := strconv.Atoi(parts[5])
 	if err != nil {
 		return RoutingInfo{}, err
@@ -99,7 +101,7 @@ func ParseStatusFile(filename string) ([]ClientInfo, []RoutingInfo, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Text()
-		switch parts := strings.Split(line, ","); parts[0] {
+		switch parts := strings.Split(line, splitCharacter); parts[0] {
 		case "HEADER":
 		case "END":
 			break
