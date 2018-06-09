@@ -33,6 +33,58 @@ type RoutingInfo struct {
 	LastRef        time.Time
 }
 
+func parseClientListEntry(line string) (ClientInfo, error) {
+	parts := strings.Split(line, ",")
+	bytesReceived, err := strconv.Atoi(parts[5])
+	if err != nil {
+		return ClientInfo{}, err
+	}
+	bytesSent, err := strconv.Atoi(parts[6])
+	if err != nil {
+		return ClientInfo{}, err
+	}
+	connectedSinceUnix, err := strconv.Atoi(parts[8])
+	if err != nil {
+		return ClientInfo{}, err
+	}
+	clientID, err := strconv.Atoi(parts[10])
+	if err != nil {
+		return ClientInfo{}, err
+	}
+	peerID, err := strconv.Atoi(parts[11])
+	if err != nil {
+		return ClientInfo{}, err
+	}
+	info := ClientInfo{
+		Name:             parts[1],
+		RealAddress:      parts[2],
+		VirtualAddress:   parts[3],
+		VirtualV6Address: parts[4],
+		BytesReceived:    int64(bytesReceived),
+		BytesSent:        int64(bytesSent),
+		ConnectedSince:   time.Unix(int64(connectedSinceUnix), 0),
+		Username:         parts[9],
+		ClientID:         int32(clientID),
+		PeerID:           int32(peerID),
+	}
+	return info, nil
+}
+
+func parseRoutingTableEntry(line string) (RoutingInfo, error) {
+	parts := strings.Split(line, ",")
+	lastRefUnix, err := strconv.Atoi(parts[5])
+	if err != nil {
+		return RoutingInfo{}, err
+	}
+	info := RoutingInfo{
+		VirtualAddress: parts[1],
+		CommonName:     parts[2],
+		RealAddress:    parts[3],
+		LastRef:        time.Unix(int64(lastRefUnix), 0),
+	}
+	return info, nil
+}
+
 // ParseStatusFile parses the openvpn-status.log file at `filename` and returns a corresponding slice of ClientInfo and RoutingInfo objects
 func ParseStatusFile(filename string) ([]ClientInfo, []RoutingInfo, error) {
 	file, err := os.Open(filename)
@@ -54,49 +106,15 @@ func ParseStatusFile(filename string) ([]ClientInfo, []RoutingInfo, error) {
 		default:
 			switch statusType := parts[0]; statusType {
 			case "CLIENT_LIST":
-				bytesReceived, err := strconv.Atoi(parts[5])
+				info, err := parseClientListEntry(line)
 				if err != nil {
 					return nil, nil, err
-				}
-				bytesSent, err := strconv.Atoi(parts[6])
-				if err != nil {
-					return nil, nil, err
-				}
-				connectedSinceUnix, err := strconv.Atoi(parts[8])
-				if err != nil {
-					return nil, nil, err
-				}
-				clientID, err := strconv.Atoi(parts[10])
-				if err != nil {
-					return nil, nil, err
-				}
-				peerID, err := strconv.Atoi(parts[11])
-				if err != nil {
-					return nil, nil, err
-				}
-				info := ClientInfo{
-					Name:             parts[1],
-					RealAddress:      parts[2],
-					VirtualAddress:   parts[3],
-					VirtualV6Address: parts[4],
-					BytesReceived:    int64(bytesReceived),
-					BytesSent:        int64(bytesSent),
-					ConnectedSince:   time.Unix(int64(connectedSinceUnix), 0),
-					Username:         parts[9],
-					ClientID:         int32(clientID),
-					PeerID:           int32(peerID),
 				}
 				clients = append(clients, info)
 			case "ROUTING_TABLE":
-				lastRefUnix, err := strconv.Atoi(parts[5])
+				info, err := parseRoutingTableEntry(line)
 				if err != nil {
 					return nil, nil, err
-				}
-				info := RoutingInfo{
-					VirtualAddress: parts[1],
-					CommonName:     parts[2],
-					RealAddress:    parts[3],
-					LastRef:        time.Unix(int64(lastRefUnix), 0),
 				}
 				routes = append(routes, info)
 			}
