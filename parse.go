@@ -18,12 +18,12 @@ type ClientInfo struct {
 	RealAddress      string
 	VirtualAddress   string
 	VirtualV6Address string
-	BytesReceived    int64
-	BytesSent        int64
+	BytesReceived    int
+	BytesSent        int
 	ConnectedSince   time.Time
 	Username         string
-	ClientID         int32
-	PeerID           int32
+	ClientID         int
+	PeerID           int
 }
 
 // RoutingInfo represents a ROUTING_TABLE entry
@@ -62,12 +62,12 @@ func parseClientListEntry(line string) (ClientInfo, error) {
 		RealAddress:      parts[2],
 		VirtualAddress:   parts[3],
 		VirtualV6Address: parts[4],
-		BytesReceived:    int64(bytesReceived),
-		BytesSent:        int64(bytesSent),
+		BytesReceived:    bytesReceived,
+		BytesSent:        bytesSent,
 		ConnectedSince:   time.Unix(int64(connectedSinceUnix), 0),
 		Username:         parts[9],
-		ClientID:         int32(clientID),
-		PeerID:           int32(peerID),
+		ClientID:         clientID,
+		PeerID:           peerID,
 	}
 	return info, nil
 }
